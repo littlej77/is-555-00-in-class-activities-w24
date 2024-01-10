@@ -17,22 +17,37 @@ df %>%
 # mass > 50, 
 # arrange by mass
 # note: filtering on some logical excludes NAs
+#i saved the results as tall_females (which is now on the right panel)
+tall_females <- df %>%
+  filter(height > 100,
+         sex == 'female') %>% 
+  #above is the same as doing two lines like this
+  # filter(height >100) %>% 
+  # filter(sex == 'female')
+  
+  select(name, height, mass, species, films) %>% 
+  filter(mass>50) %>% 
+  arrange(mass)
+#this arrange() is sorting it in ascending order. 
 
-
+  
 # calculate a new column,weight_lbs = mass * 2.204623
 # Make sure it gets saved to the tibble...
-
-
+df <- df %>% 
+  mutate(weight_lbs = mass*2.204623) 
+  #select(mass, weight_lbs) use this to double check your work or can use glimpse()
 
 # group and summarize. Pay attention to NAs
 # get a count and mean mass by species
-
-
+df %>% 
+  group_by(species) %>% 
+  summarise(species_count = n(),
+            avg_mass = mean(mass, na.rm = TRUE))
+#n() counts the rows. so there are 6 droids and 3 gungans in our dataset
 # Lots of NAs for average... why? Even for large groups it's NA...
-
+# bc if there is a null then it will give NA.. if some are missing then it will show NA. so we had to explictly tell R to ignore those NAs
 
 # Humans definitely have SOME mass data...
-
 
 # so let's exclude NAs from the mean aggregation:
 
