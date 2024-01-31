@@ -166,8 +166,14 @@ penguins %>%
 # The classic scatter
 # Important: attributes vs aesthetics. Inheritance
 
-
-
+penguins %>% 
+  ggplot(aes(x=bill_length_mm, y= bill_depth_mm, color=species, shape= sex, size=body_mass_g))+
+  #fill is how you change anything with area, color is for dots
+  geom_point()+
+  theme_minimal()
+  #geom_point(size=2) to change all the sizes of the points
+  #theme_bw()+
+  #labs(title = 'This is the title', x='flipper length',y= 'Count') #short for labels
 
 
 # More inheritance general vs. local aesthetics: if we have time
