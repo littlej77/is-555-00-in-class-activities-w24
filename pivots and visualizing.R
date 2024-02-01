@@ -142,7 +142,7 @@ gap <- read_csv('https://www.dropbox.com/s/dv1a1ldkuyoftn2/gap_smaller.csv?dl=1'
 gap %>% 
   select(country, year, lifeExp) %>% 
   pivot_wider(
-    names_from = year,
+    names_from = year, #column names
     values_from = lifeExp
   )
 
@@ -152,7 +152,7 @@ gap %>%
 # Now let's go the other way: pivot all three measures longer
 gap %>% 
   pivot_longer(
-    cols = lifeExp:gdpPercap, # c(lifeExp, pop, gdpPercap)
+    cols = lifeExp:gdpPercap, # c(lifeExp, pop, gdpPercap) this takes the range of columns from lifeexp to gdppercap
     names_to = 'measure',
     values_to = 'value'
   )
@@ -169,9 +169,11 @@ gap_wide <- gap %>%
     values_from = lifeExp:gdpPercap
   )
 
+gap_wide
+
 gap_wide %>% 
   pivot_longer(
-    cols = lifeExp_1952:gdpPercap_2007,
+    cols = lifeExp_1952:gdpPercap_2007, #takes all the columns between these two too
     names_to = 'convert_me',
     values_to = 'value'
   ) %>% 
@@ -179,10 +181,10 @@ gap_wide %>%
 
 
 
-
+#better way to do what i did above
 gap_wide %>% 
   pivot_longer(lifeExp_1952:gdpPercap_2007,
-               names_sep = '_',
+               names_sep = '_', #the delim logic 
                names_to = c('year','name'))
 
 
@@ -195,8 +197,14 @@ bob <- read_csv('https://www.dropbox.com/s/mozqpceit51hia7/bob_ross.csv?dl=1')
 # see if you can pivot the religious income data into a tidier format
 # what is the most common income bracket for each religion?
 
-
-
+ri %>% 
+  pivot_longer(
+    cols = !religion, #take all columns other than the religion column
+    names_to = 'income_bracket',
+    values_to = 'household_count'
+  ) %>% 
+  group_by(religion) %>% 
+  slice_max(household_count, with_ties = F)
 
 # IMPORTANT: Notice how EASY it is to find the top income for each religion because
 # of the tidying of the data we've done. It's a simple filter, rather than a 
