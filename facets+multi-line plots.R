@@ -43,3 +43,56 @@ econ %>%
   geom_line(size=1.5)+
   facet_wrap(~Measure, ncol=1)
 
+
+#in class
+library(tidyverse)
+
+
+movies <- read_csv('https://www.dropbox.com/scl/fi/pi7nexxuoqnvviwfzwun9/movie_ratings.csv?rlkey=x419gluseq6p8e8xzu12ndfc9&dl=1')
+
+# Scatter of RT critist vs RT Users. Or vs imdb. Or vs metacritic...
+# add some facets...
+movies %>% 
+  ggplot(aes(x=rating, y = imdb, color= rating, fill =rating))+
+  geom_col()
+
+movies %>% 
+  pivot_longer(!rating, names_to = 'source',
+               values_to = 'percentage') %>%  #pivot everything other than rating. need to be pivoted to long formart b4 i can use facets
+  filter(!is.na(percentage)) %>% #filters the NA out
+  ggplot(aes(x=rating, y= percentage, color=rating, fill=rating))+ #bc we pivoted and they are the same scale (0-1) 
+  geom_col(position = 'dodge')+ #if i want them side by side and not stacked use 'dodge'
+  facet_wrap(~source)
+  
+# But how do we compare ratings from different ratings sites? 
+# Or ratings from critics vs. users?
+
+movies %>% 
+  pivot_longer(!rating, names_to = 'source',
+               values_to = 'percentage') %>%  #pivot everything other than rating. need to be pivoted to long formart b4 i can use facets
+  filter(!is.na(percentage)) %>% #filters the NA out
+  mutate(review_type = if_else(str_detect(source, 'user'), 'Audience','Critic')) %>% 
+  ggplot(aes(x=rating, y= percentage, color=rating, fill=rating))+ #bc we pivoted and they are the same scale (0-1) 
+  geom_col(position = 'dodge')+ #if i want them side by side and not stacked use 'dodge'
+  facet_grid(review_type~source)
+
+
+
+
+steak <- read_csv('https://www.dropbox.com/scl/fi/mzg5oxenh9oonbwpwgxzm/steak_data.csv?rlkey=2gbf1kfqfkln0zf2alwo32nza&dl=1')
+
+
+# Here's a dumb chart:
+steak %>% 
+  ggplot(aes(x = steak_prep, fill = educ)) +
+  geom_bar() +
+  # facet_grid(educ ~ hhold_income) +
+  labs(title = "Steak Preparation Preference by Education Level",
+       x = "Steak Preparation",
+       y = "Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# What else can you find? What other variables are in the dataset that might 
+# shed some light on steak-eaters' preferences?
+
