@@ -6,6 +6,17 @@ df3 <- read_csv('https://www.dropbox.com/s/uzusr9723ffn546/df_3.csv?dl=1')
 df4 <- read_csv('https://www.dropbox.com/s/js8tehtsk7btpeq/df_4.csv?dl=1')
 
 big_df <-  rbind(df1, df2,df3,df4)
+bind_rows(df1,df2,df3,df4, .id= 'df') %>% #have it tell you which df it came from
+  ggplot(aes(x=x, fill=df))+
+  geom_density(alpha=.4)
+
+
+#trying to understand the dataset and see whats going on. 
+bind_rows(df1,df2,df3,df4, .id= 'df') %>% #have it tell you which df it came from
+  ggplot(aes(x=x, y=y, color=df))+
+  geom_point()+
+  geom_smooth(method=lm, se=F)+
+  facet_wrap(~df)
 
 
 # A few sample calculations:
