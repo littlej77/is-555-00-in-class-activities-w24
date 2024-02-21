@@ -25,11 +25,18 @@ df %>% glimpse
 # Algorithms don't like missing values. It messes with the math.
 
 # Get a feel for the missingness
-
-
-
 # first check: is the missingness relevant?
 # use summarize across
+
+df %>% 
+  count(is.na(age)) #this is doing this manually for 12 columns... its annoying
+
+#allows you to do mutate/summarize across columns
+df %>% 
+  summarise(across(everything(), ~sum(is.na(.x))))
+                                           #.x is a placeholder, for every column that is returned by everything()
+
+
 
 
 # fill in missing age values, check our work
