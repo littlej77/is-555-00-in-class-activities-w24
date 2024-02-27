@@ -14,12 +14,32 @@ df %>%
   summary()
 
 # calculate extreme threshold caps based on 99th percentile
+df %>% 
+  select(all_of(outlier_candidates))
 
+#look at them to see if you can glean any insights
+df %>% 
+  select(all_of(outlier_candidates)) %>% 
+  pivot_longer(everything()) %>% 
+  ggplot(aes(y=value, fill=name))+
+  geom_boxplot()+
+  facet_wrap(~name, nrow=1, scales='free_y')+
+  theme_bw()
+
+#manufacture a bunch of 99th percentile measures for our outlier canidates
+age_cap <- quantile(df$age,.99)
+sib_sp_cap <- quantile(df$sib_sp,.99)
+parch_cap <- quantile(df$parch, .99)
+fare_cap <- quantile(df$fare,.99)
 
 # Now check how many are beyond the percentile caps
 
-# cap age and fare, and check work before saving
+dfd %>% 
+  summarize(fare_over_cap = sum(fare>fare_cap))
 
+# cap age and fare, and check work before saving
+df %>% 
+  mutate(fare= if_else(fare > fare_cap, fare_cap, fare))
 
 
 # save the result to df
@@ -32,6 +52,7 @@ df %>%
 
 # Transforming Features ---------------------------------------------------------------------------------
 # Here's the basic idea behind Box-Cox transformations:
+#options of powder transformations. it applies these things and then looks among them for the one that looks most normal. 
 tribble(
   ~value_orig, ~transformation, ~value_tr,
   30,          'y^-3',         30^-3,
@@ -47,7 +68,12 @@ tribble(
 
 
 # Examine distributions of age and fare
-
+df %>% 
+  select(age, fare) %>% 
+  pivot_longer(everything()) %>% 
+  ggplot(aes(x=value, fill = name))+
+  geom_density(alpha=.4)+
+  facet_wrap(~name, ncol= 1, scales= 'free')
 
 
 # Let's transform the fare column
@@ -69,7 +95,12 @@ df %>%
     fare_th  = fare^(1/2),
     fare_t1  = fare^1,
     fare_t2  = fare^2
-  ) 
+  ) %>% 
+  select(starts_with('fare_')) %>% 
+  pivot_longer(everything()) %>% 
+  ggplot(aes(x=value, fill = name))+
+  geom_density(alpha=.4)+
+  facet_wrap(~name, ncol= 1, scales= 'free')
 
 # now let's visualize the effect of the transformations to see 
 # which one makes sense.
@@ -84,9 +115,17 @@ df %>%
 # (This is what caused the errors we saw in class...)
 df %>% count(fare)
 
+
+df %>% 
+  mutate(fare= (fare)^-(1/2)) %>% 
+  count(fare) %>% print(n=300)
+#we have 0s in our data... so maybe we can just add 1 to everything? 
+
 df <- df %>% 
   mutate(fare = (fare+1)^-(1/2))
 
+
+#code to accomplish calculations of z scores
 
 
 # Now we can scale the numeric columns using the old-school `scale()` function. Because it's an old function,
