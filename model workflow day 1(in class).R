@@ -108,10 +108,14 @@ rose_fit %>% tidy() #tidys up the output
 
 rose_preds <- rose_fit %>% 
   predict(new_data = rose_testing)
+#when you ask for predictions. its giving us a class prediction. but we can also add a ", type="prob"" parameter, and it produce pred_0 and pred_1. which show the propability of a given row belonging to 1 or 0
+#you might not want to do a .5 threshold for the prediction
+rose_probs <- rose_fit %>% 
+  predict(new_data = rose_testing, type = "prob")
 
-#see our data with the predictions for us to see it more clearly and evaluate
+#see our data with the predictions and probability for us to see it more clearly and evaluate
 rose_test <- rose_testing %>% 
-  bind_cols(rose_preds)
+  bind_cols(rose_preds, rose_probs)
 
 
 #-------------------------------------------------------------------------------
@@ -121,8 +125,24 @@ rose_test <- rose_testing %>%
 # Now let's build a confusion matrix and explore a few of the related metrics.
 # conf_mat(), sens()
 
+#see individual metrics
+leo_test %>% 
+  sens(truth= survived,
+       estimate= .pred_class) #gives a sensitivity score
+#see individual metrics
+
+leo_test %>% 
+  accuracy(truth= survived,
+       estimate= .pred_class) #gives a accuracy score
+ 
+#to see most of the metrics in one code
+leo_test %>% 
+  conf_mat(truth= survived,
+           estimate= .pred_class) %>% 
+  summary()
 
 
+ #yardstick::accuracy()
 
 
 
@@ -138,9 +158,10 @@ leo_results %>%
   roc_auc(truth = survived, .pred_0)
 
 # Finalize the model with last_fit()
-
-
-
+#designed to take a split object & model specification and allows us to package everything up
+leo_final <- leo_spec %>% 
+  last_fit(survived ~ ., 
+    split=leo_split)
 
 # finalized object, extract predictions, metrics 
 # with dedicated collect_* functions:
