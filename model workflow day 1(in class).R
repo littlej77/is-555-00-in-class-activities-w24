@@ -165,3 +165,5 @@ leo_final <- leo_spec %>%
 
 # finalized object, extract predictions, metrics 
 # with dedicated collect_* functions:
+leo_final %>% collect_predictions()
+leo_final %>% collect_metrics()
