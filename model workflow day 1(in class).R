@@ -160,7 +160,7 @@ leo_results %>%
 # Finalize the model with last_fit()
 #designed to take a split object & model specification and allows us to package everything up
 leo_final <- leo_spec %>% 
-  last_fit(survived ~ ., 
+  last_fit(survived ~ .,
     split=leo_split)
 
 # finalized object, extract predictions, metrics 
