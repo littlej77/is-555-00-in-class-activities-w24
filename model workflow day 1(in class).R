@@ -60,10 +60,63 @@ leo_preds <- leo_fit %>%
   predict(new_data = leo_testing)
 
 #see our data with the predictions for us to see it more clearly and evaluate
-leo_testing %>% 
+leo_test <- leo_testing %>% 
   bind_cols(leo_preds)
 
+#-------------------------------------------------------------------------------
+#trying another model
+#-------------------------------------------------------------------------------
+# First let's make sure factors are factors
+#be aware of categories that are intended to be treated as a category. factors have different levels, 
+#so "had_cabin" is binary but they are essentially categories (yes they did or no they didnt). so we need to convert them
+rose <- titanic %>% 
+  mutate(across(c(survived,had_cabin, sex), ~as.factor(.x)))
+#see now they are <fct> instead of <dbl>
 
+
+# Now let's do a train/test split
+#intial split() function takes in some data and splits (75,25)
+set.seed(42)
+rose_split <- initial_split(leo,
+                           prop= 0.75,
+                           strata= survived) #dependent variable. what we are trying to predict.handles disproportionately split dependent variables
+
+rose_training <- rose_split %>% training()
+rose_testing <-  rose_split %>% testing()
+
+# Plan the model setup, including the engine and mode
+rose_spec <- decision_tree() %>% 
+  set_engine('rpart') %>% 
+  set_mode('classification')
+
+show_engines('decision_tree') #to see the engines options and mode
+
+# relevant model types: logistic_reg(), linear_reg(), decision_tree(), rand_forest(), boost_tree()
+# show_engines('logistic_reg')
+
+# Now fit a model, look at output with tidy()
+rose_fit <- rose_spec %>% 
+  fit(survived ~ pclass+had_cabin+sex+age+sib_sp+parch+fare,#what you are predicting ~ as predicted by.... can also just do survived~ .
+      data= rose_training) #data you want to train
+
+rose_fit %>% tidy() #tidys up the output
+
+
+# Calculate predictions, 
+# including class predictions _and_ probabilities
+#to get predictions from our test set
+
+rose_preds <- rose_fit %>% 
+  predict(new_data = rose_testing)
+
+#see our data with the predictions for us to see it more clearly and evaluate
+rose_test <- rose_testing %>% 
+  bind_cols(rose_preds)
+
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 # Now let's build a confusion matrix and explore a few of the related metrics.
 # conf_mat(), sens()
