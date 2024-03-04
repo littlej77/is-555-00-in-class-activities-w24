@@ -4,20 +4,39 @@ library(tidymodels)
 # Okay let's work through the (cleaned) titanic data from last week:
 titanic <- read_csv('https://www.dropbox.com/s/92funarubgk5rzh/titanic_clean.csv?dl=1')
 
+#------------------------general flow-------------------------------------------
 
+# 1. setup train/test split
+# 2. model setup
+# 3. fit the model
+# 4. evaluate
+# 5. finalize
+
+#-------------------------------------------------------------------------------
 # First let's make sure factors are factors
-
-
+#be aware of categories that are intended to be treated as a category. factors have different levels, 
+#so "had_cabin" is binary but they are essentially categories (yes they did or no they didnt). so we need to convert them
+leo <- titanic %>% 
+  mutate(across(c(survived,had_cabin, sex), ~as.factor(.x)))
+#see now they are <fct> instead of <dbl>
 
 
 # Now let's do a train/test split
+#intial split() function takes in some data and splits (75,25)
+set.seed(42)
+leo_split <- initial_split(leo,
+                               prop= 0.75,
+                               strata= survived) #dependent variable. what we are trying to predict.handles disproportionately split dependent variables
 
-
-
+leo_training <- leo_split %>% training()
+leo_testing <-  leo_split %>% testing()
 
 # Plan the model setup, including the engine and mode
+leo_spec <- logistic_reg() %>% 
+  set_engine('glm') %>% 
+  set_mode('classification')
 
-
+show_engines('logistic_reg') #to see the engines options and mode
 
 # relevant model types: logistic_reg(), linear_reg(), decision_tree(), rand_forest(), boost_tree()
 # show_engines('logistic_reg')
@@ -26,16 +45,23 @@ titanic <- read_csv('https://www.dropbox.com/s/92funarubgk5rzh/titanic_clean.csv
 
 
 # Now fit a model, look at output with tidy()
+leo_fit <- leo_spec %>% 
+  fit(survived ~ pclass+had_cabin+sex+age+sib_sp+parch+fare,#what you are predicting ~ as predicted by.... can also just do survived~ .
+      data= leo_training) #data you want to train
 
-
+leo_fit %>% tidy() #tidys up the output
 
 
 # Calculate predictions, 
 # including class predictions _and_ probabilities
+#to get predictions from our test set
 
+leo_preds <- leo_fit %>% 
+  predict(new_data = leo_testing)
 
-
-
+#see our data with the predictions for us to see it more clearly and evaluate
+leo_testing %>% 
+  bind_cols(leo_preds)
 
 
 
