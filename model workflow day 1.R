@@ -19,13 +19,19 @@ mpg_training <- mpg_split %>% training()
 mpg_testing <- mpg_split %>% testing()
 
 # Next you'll specify/plan your model:
-mpg_model <- linear_reg() %>%  # <-- start with the type of model you're fitting. 
-  set_engine('lm') %>%         # <-- "engine" is the estimation technique you'd like to use.
-  set_mode('regression')       # <-- "mode" is the type of dv you're predicting (classification vs. regression)
+#relevant model types: logistic_reg(),linear_reg(), decision_tree(), rand_forest(), boost_tree(), 
+#show_engines('logistic_reg')
+ 
+mpg_model <- linear_reg() %>%  # <-- start with the type of model you're fitting. linear regression model 
+  set_engine('lm') %>%         # <-- "engine" is the estimation technique you'd like to use. "here is how i want you to do the math"
+  set_mode('regression')       # <-- "mode" is the type of dv you're predicting (classification vs. regression). how you say between regression or classification (binary or classes)
+
+show_engines('linear_reg') #to see the engine tyeps
 
 # Now we can fit the model using the training data:
 mpg_fit <- mpg_model %>% 
-  fit(hwy ~ cty + displ,    # <-- first argument is the model equation.  
+  fit(hwy ~ cty + displ,    # <-- first argument is the model equation.  fit takes 2 things: the equation and the data. 
+                            #hwy (dependent variable) predicted by the city and display. you can also do "." for everything else
       data = mpg_training)  # <-- here you give it the data you're training with.
 
 # Check results with the `tidy()` function
@@ -39,7 +45,7 @@ mpg_predictions <- mpg_fit %>%
 # Usually we bind these predictions with a few columns from the data, including the "ground truth" column.
 mpg_test_results <- mpg_testing %>% 
   select(hwy, cty, displ) %>% 
-  bind_cols(mpg_predictions)
+  bind_cols(mpg_predictions) #tacks on the mgp_predictions column for us to check
 
 # We can then use these to evaluate whatever metrics feel important to us.
 mpg_test_results %>%
@@ -53,6 +59,9 @@ mpg_test_results %>%
 mpg_test_results %>%
   mae(truth = hwy,        # <-- and here's the mean absolute error function
       estimate = .pred)
+
+
+#-------------step 5
 
 # When we're done modeling, we use `last_fit()` to "finalize" a model and get associated predictions:
 mpg_last_fit <- mpg_model %>% 
