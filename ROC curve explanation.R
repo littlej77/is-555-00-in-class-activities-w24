@@ -75,7 +75,7 @@ leo_results %>%
   labs(title = 'ROC Curve: All Predictors')
 
 leo_results %>% 
-  roc_curve(truth = survived, .pred_survived_some, event_level = 'second') %>% 
+  roc_curve(truth = survived, .pred_survived_some, event_level = 'second') %>% #survived is the target event and its listed second so we say that. 
   autoplot() +
   labs(title = 'ROC Curve: Some Predictors')
 
@@ -92,3 +92,7 @@ leo_results %>%
   roc_auc(truth = survived, .pred_survived_some, event_level = 'second')
 leo_results %>% 
   roc_auc(truth = survived, .pred_survived_month, event_level = 'second')
+
+leo_results %>%
+  conf_mat(truth =  survived, estimate = .pred_survived_some) %>%
+  summary()
