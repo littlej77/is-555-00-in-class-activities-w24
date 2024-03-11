@@ -13,7 +13,7 @@ cr_data <- cr_data %>%
 
 cr_data %>% glimpse()
 
-# Missingness:
+# Missingness count:
 cr_data %>% 
   summarise(across(everything(), ~sum(is.na(.)))) %>% 
   glimpse()
@@ -34,22 +34,32 @@ cr_split <- initial_split(cr_data, strata = status)
 cr_training <- cr_split %>% training()
 cr_testing <- cr_split %>% testing()
 
+#set our recipes up with our training data!! why? in order to keep our test set purely out of the sample, we wont allow the recipe to even see it. 
+
 # Let's create a recipe that:
 #    - imputes missing numeric values
 #    - log transforms assets, debt, income, price, expenses
 #    - normalizes all numeric predictors
 #    - dummy codes all categories
+cr_rec <-  recipe(status ~ .,
+                  data = cr_training) %>% 
+#as of now, all it knows is that there are 14 columns. 1 is an outcome. and it knows which datatypes are which
+#impute missing data. only effective on numeric columns (?)
+          step_impute_median(all_numeric_predictors()) %>% 
+          step_log(assets,debt, income, price, expenses, offset = 1) %>% 
+          step_normalize(all_numeric_predictors()) %>% 
+          step_dummy(all_nominal_predictors())
 
-
+# we get some warning bc most of our assets & debts are 0s. so in the log transformation we will do offset = 1 (shift all 5 columns by 1)
 
 
 
 
 # Brief look at prep(), bake(), juice()
 # What are these doing?
-cr_rec %>% prep() 
+cr_rec %>% prep() #tells the recipe to go and follow the instructions you gave it.
 cr_rec %>% prep() %>% bake(new_data = cr_training)
-cr_rec %>% prep() %>% juice()
+cr_rec %>% prep() %>% juice() # requires a preped recipe. will take whatever data you provided to the recipe when you set it up. then it builds a tibble. a way to look and see what happend/ check your work 
 
 
 # Try it out --------------------------------------------------------------
@@ -110,8 +120,24 @@ flights_testing <- flights_split %>% testing()
 
 # Let's create a recipe to handle everything we did for `flights_fe` above:
 #   Some new steps to try: step_date(), step_range()
-
-
+#     - New Features: day_of_week, month
+        #add_step(day_of_week, month)
+#     - Impute missing distance
+        #step_impute_mean(distance) %>% 
+#     - Log transform: dep_delay, air_time, distance
+         # step_log(dep_delay, air_time, distance) %>% 
+#     - Center/Scale: dep_delay, air_time, distance, dep_time
+         # step_normalize(dep_delay, air_time, distance, dep_time) %>% 
+#     - Dummy codes: origin, carrier, holidays 
+          #step_dummy(origin, carrier, holidays)
+  
+flights_rec <-  recipe(arr_delay ~ .,
+                       data = flights_training) %>% 
+  step_date(date, features= c("dow", "month")) %>% 
+  step_impute_mean(distance) %>% 
+  step_log(dep_delay, air_time, distance, offset=1) %>%  #shifting them all by 1 doesnt really change the z score
+  step_normalize(dep_delay, air_time, distance, dep_time) %>% 
+  step_dummy(all_nominal_predictors())
 
 
 
