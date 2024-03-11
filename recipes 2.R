@@ -142,11 +142,11 @@ flights_rec <-  recipe(arr_delay ~ .,
 
 
 # If you want to check your work as you go:
-flights_rec %>% prep() %>% juice() 
+flights_rec %>% prep() %>% juice() %>%  glimpse()
 
 
 # When we're done, here's our first workflow:
-lr_spec <- logistic_reg() 
+lr_spec <- logistic_reg() #didnt set engine or mode. for logistic_reg then there is GLM is default. 
 
 flights_wkfl <- workflow() %>% 
   add_model(lr_spec) %>% 
@@ -154,6 +154,8 @@ flights_wkfl <- workflow() %>%
 
 flights_fit <- flights_wkfl %>% 
   fit(data = flights_training)
+
+flights_fit %>% tidy()
 
 # Fun shortcut function: augment()
 flights_fit %>% 
