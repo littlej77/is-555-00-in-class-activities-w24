@@ -14,18 +14,20 @@ cars_training <- cars_split %>% training()
 cars_testing <- cars_split %>% testing()
 
 # Let's briefly revisit this recipe and the various steps:
+#category handeling
 cars_rec <- recipe(sellingprice_log ~.,
                    data = cars_training) %>% 
   step_impute_median(all_numeric_predictors()) %>% #    -replace all the missing data with the median
-  step_YeoJohnson(all_numeric_predictors()) %>% #   -help with 
+  step_YeoJohnson(all_numeric_predictors()) %>% # try to make it less skewed (log, boxcox, and yeojohnson(easiest) all accomplish the same idea)   -throw at all your nominals... easy to use.
   step_normalize(all_numeric_predictors()) %>% #    - normalizes all numeric predictors
-  step_novel(make, model) %>%
-  step_unknown(make, model) %>% 
-  step_other(make, threshold = 0.03) %>% 
+  step_novel(make, model) %>% #       - assign a previously unseen factor level to "new"...for a category that we know is messy, use this to account for it.
+  step_unknown(make, model) %>% #   - take anything that is NA and mark it as unknown.. basically imputation for categories.
+  step_other(make, threshold = 0.03) %>% #    - look at the make column and keep anything that is in the top 97% of the category counts, but the bottom 3% are then lumped together into a category called "other". useful for data with long tails in categorical data
   step_other(model, threshold = 0.01) %>% 
   step_dummy(all_nominal_predictors())  #    - dummy codes all categories
 
 # cars_rec %>% prep() %>% juice() %>% glimpse()
+#cars_rec %>%  prep() %>% bake(new_data = cars_testing)
 
 
 
@@ -41,12 +43,19 @@ cars_wkfl <- workflow() %>%
 # And we'll use dedicated functions to get a crossvalidation object and
 # perform the fit
 
+set.seed(42)
+cars_folds <- vfold_cv(data = cars_training, #vfold_cv is designed to work the same way ast the initial_split()
+                       #v=10,
+                       strata = sellingprice_log)
+                       #repeats = 3)
+
+cars_cv_fit <- cars_wkfl %>% #give the workflow to the fit_resamples and then give it the folds object.
+  fit_resamples(resamples = cars_folds)
 
 
 
-
-
-
+cars_cv_fit %>% collect_metrics()
+#gives mean and std_err bc the goal of our cross validation is to see consistency accross the 10 folds that we did. we want to see relatively small variation in the means of the folds. 
 
 
 
